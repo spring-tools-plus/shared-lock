@@ -2,9 +2,9 @@ package org.shared.lock.demo;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
-import cn.madtiger.shared.lock.redis.ISharedLock;
-import cn.madtiger.shared.lock.redis.LockResultHolder;
-import cn.madtiger.shared.lock.redis.SpinSetLockArgs;
+import net.madtiger.shared.lock.redis.ISharedLock;
+import net.madtiger.shared.lock.redis.LockResultHolder;
+import net.madtiger.shared.lock.redis.SpinSetLockArgs;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

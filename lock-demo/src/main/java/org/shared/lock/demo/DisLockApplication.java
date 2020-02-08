@@ -1,6 +1,6 @@
 package org.shared.lock.demo;
 
-import cn.madtiger.shared.lock.redis.EnabledSharedLock;
+import net.madtiger.shared.lock.redis.EnabledSharedLock;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 

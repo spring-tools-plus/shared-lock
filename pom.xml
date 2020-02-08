@@ -9,7 +9,7 @@
     <version>2.2.4.RELEASE</version>
     <relativePath/> <!-- lookup parent from repository -->
   </parent>
-  <groupId>cn.madtiger.shared.lock</groupId>
+  <groupId>net.madtiger.shared.lock</groupId>
   <artifactId>shared-lock</artifactId>
   <version>1.0-SNAPSHOT</version>
   <packaging>pom</packaging>

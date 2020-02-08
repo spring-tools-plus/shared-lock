@@ -25,7 +25,7 @@
 
 ```xml
 <dependency>
-   <groupId>cn.madtiger.shared.lock</groupId>
+   <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>lock-annotation</artifactId>
    <version>1.0.0-RELEASE</version>
 </dependency>
@@ -55,7 +55,7 @@ public class DisLockApplication {
 
 ```xml
 <dependency>
-   <groupId>cn.madtiger.shared.lock</groupId>
+   <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>spring-boot-starter</artifactId>
    <version>1.0.0-RELEASE</version>
 </dependency>
@@ -74,7 +74,7 @@ public class DisLockApplication {
 
 ```xml
 <dependency>
-   <groupId>cn.madtiger.shared.lock</groupId>
+   <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>lock-annotation</artifactId>
    <version>1.0.0-RELEASE</version>
 </dependency>
@@ -84,13 +84,13 @@ public class DisLockApplication {
 
 SharedLock 组件使用主要涉及三个类
 
-1. cn.madtiger.shared.lock.redis.SpringRedisLockClient 
+1. SpringRedisLockClient 
 用于 操作 redis 的客户端 ，底层是通过 spring-data-redis 的 RedisTemplate 实现的
 
-2. cn.madtiger.shared.lock.redis.RedisLockService
+2. RedisLockService
 分布式锁的Redis具体实现类
 
-3. cn.madtiger.shared.lock.redis.configuration.SharedLockInterceptor 
+3. SharedLockInterceptor 
 用于支持 AOP 模式的拦截器，这里是可选的，如果不需要支持 拦截器则不用实例化
 
 
@@ -196,7 +196,7 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 
 ### AOP Annotation 方式
 
-此方式最简便，只要在需要锁执行的方法上增加 `cn.madtiger.shared.lock.redis.SharedLock` 注解。
+此方式最简便，只要在需要锁执行的方法上增加 `SharedLock` 注解。
 
 
 使用方式见 [AOP 使用方式](https://github.com/spring-tools-plus/shared-lock/blob/master/lock-demo/src/main/java/org/shared/lock/demo/DemoController.java) 的 `doAOP` 方法。
@@ -204,7 +204,7 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 * 此方式增加了几个特性 *
 1. 支持降级
 
-`cn.madtiger.shared.lock.redis.SharedLock#fallbackMethod` 的 配置当获取锁失败后的降级方法。
+`SharedLock#fallbackMethod` 的 配置当获取锁失败后的降级方法。
 *注意*：这里降级只正对 获取所失败，如果是业务执行失败，则不会调用此方法，业务失败请 catch 处理。
 
 2. 回滚处理
@@ -214,7 +214,7 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 
 3. 其他参数
 
-见 `cn.madtiger.shared.lock.redis.SharedLock`
+见 `SharedLock`
 
 
 
