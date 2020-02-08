@@ -11,6 +11,11 @@ target/
 
 .idea/
 
+# pom deploy
+*.xml.tag
+*.xml.next
+*.xml.releaseBackup
+
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
