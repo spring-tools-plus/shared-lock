@@ -1,10 +1,10 @@
-package cn.madtiger.shared.lock.configuration;
+package cn.madtiger.shared.lock.redis.configuration;
 
-import cn.madtiger.shared.lock.ISharedLock;
-import cn.madtiger.shared.lock.SpinSetLockArgs;
-import cn.madtiger.shared.lock.autoconfiguration.LockRedisClient;
-import cn.madtiger.shared.lock.autoconfiguration.RedisLockService;
-import cn.madtiger.shared.lock.autoconfiguration.SpringLockClient;
+import cn.madtiger.shared.lock.redis.ISharedLock;
+import cn.madtiger.shared.lock.redis.SpinSetLockArgs;
+import cn.madtiger.shared.lock.redis.LockRedisClient;
+import cn.madtiger.shared.lock.redis.RedisLockService;
+import cn.madtiger.shared.lock.redis.SpringRedisLockClient;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -25,8 +25,8 @@ public class SharedLockRedisConfiguration implements ISharedLockConfiguration {
    * @return
    */
   @Bean
-  public SpringLockClient defaultLockClient(ObjectProvider<RedisTemplate> redisTemplate){
-    return new SpringLockClient(redisTemplate.getIfAvailable());
+  public SpringRedisLockClient defaultLockClient(ObjectProvider<RedisTemplate> redisTemplate){
+    return new SpringRedisLockClient(redisTemplate.getIfAvailable());
   }
 
   /**

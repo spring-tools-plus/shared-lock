@@ -1,4 +1,4 @@
-package cn.madtiger.shared.lock.autoconfiguration;
+package cn.madtiger.shared.lock.redis;
 
 import java.io.UnsupportedEncodingException;
 import lombok.extern.slf4j.Slf4j;
@@ -14,12 +14,12 @@ import org.springframework.data.redis.core.types.Expiration;
  * @version 1.0
  */
 @Slf4j
-public class SpringLockClient implements  LockRedisClient{
+public class SpringRedisLockClient implements  LockRedisClient{
 
 
   protected final RedisTemplate<String, String> redisTemplate;
 
-  public SpringLockClient(RedisTemplate<String, String> redisTemplate){
+  public SpringRedisLockClient(RedisTemplate<String, String> redisTemplate){
     this.redisTemplate = redisTemplate;
   }
 

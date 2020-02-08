@@ -1,4 +1,4 @@
-package cn.madtiger.shared.lock.configuration;
+package cn.madtiger.shared.lock.redis.configuration;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -36,6 +36,6 @@ public class SharedLockConfigurationImportSelector implements ImportSelector {
 
   static {
     // 注册 redis 配置
-    CONFIGURATION_CLASSES.put("org.springframework.data.redis.core.RedisTemplate", "org.madtiger.shared.lock.configuration.SharedLockRedisConfiguration");
+    CONFIGURATION_CLASSES.put("org.springframework.data.redis.core.RedisTemplate", "cn.madtiger.shared.lock.redis.configuration.SharedLockRedisConfiguration");
   }
 }

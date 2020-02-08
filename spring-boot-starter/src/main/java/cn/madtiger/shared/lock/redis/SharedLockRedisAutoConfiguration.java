@@ -1,7 +1,7 @@
-package cn.madtiger.shared.lock.autoconfiguration;
+package cn.madtiger.shared.lock.redis;
 
-import cn.madtiger.shared.lock.configuration.SharedLockRedisConfiguration;
-import cn.madtiger.shared.lock.configuration.ISharedLockConfiguration;
+import cn.madtiger.shared.lock.redis.configuration.SharedLockRedisConfiguration;
+import cn.madtiger.shared.lock.redis.configuration.ISharedLockConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Configuration;

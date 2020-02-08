@@ -1,4 +1,4 @@
-package cn.madtiger.shared.lock;
+package cn.madtiger.shared.lock.redis;
 
 import lombok.Builder;
 import lombok.Builder.Default;

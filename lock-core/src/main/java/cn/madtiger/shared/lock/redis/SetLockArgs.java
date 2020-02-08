@@ -1,5 +1,6 @@
-package cn.madtiger.shared.lock;
+package cn.madtiger.shared.lock.redis;
 
+import java.util.function.Supplier;
 import lombok.Builder.Default;
 import lombok.Getter;
 
@@ -30,18 +31,6 @@ public abstract class SetLockArgs {
    * 最小休眠值
    */
   public static final int SLEEP_MIN_MILLS = 50;
-
-  /**
-   * 超时失败回调
-   */
-  @Default
-  DoCallback timeoutCallback = DoCallback.NOOP;
-
-  /**
-   * 释放锁失败回调
-   */
-  @Default
-  DoCallback rollbackCallback = DoCallback.NOOP;
 
   /**
    * 锁超等待超时时间，总的获取时间，该时间应该大于等于 {@link #getTimeoutMills} ，单位秒，默认2秒

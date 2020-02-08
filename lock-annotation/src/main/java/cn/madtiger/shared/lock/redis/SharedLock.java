@@ -1,4 +1,4 @@
-package cn.madtiger.shared.lock;
+package cn.madtiger.shared.lock.redis;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -94,7 +94,7 @@ public @interface SharedLock {
    * 失败降级方法，当获取所失败时，替代方法，方法签名必须跟当前方法一致
    * @return
    */
-  String faultMethod() default DEFAULT_METHOD;
+  String fallbackMethod() default DEFAULT_METHOD;
 
   /**
    * 获取所失败执行策略，默认是自动，具体见 {@link FaultPolicy#AUTO}

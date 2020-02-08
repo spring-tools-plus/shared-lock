@@ -1,4 +1,4 @@
-package cn.madtiger.shared.lock.configuration;
+package cn.madtiger.shared.lock.redis.configuration;
 
 /**
  *

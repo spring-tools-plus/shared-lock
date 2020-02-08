@@ -1,4 +1,4 @@
-package cn.madtiger.shared.lock;
+package cn.madtiger.shared.lock.redis;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -32,22 +32,27 @@ public abstract class AbsSpinLock implements ISharedLock<SpinSetLockArgs>{
     resultBuilder.value(value);
     // 尝试获取锁
     if (tryAcquire(key, value,  args)){
+      LockResultHolder<T> result = resultBuilder.build();
       try {
-        resultBuilder.status(LockResultHolder.DONE);
-        resultBuilder.returnData(callback.get());
-        return resultBuilder.build();
+        result.status = LockResultHolder.DONE;
+        result.returnData = callback.get();
       } finally{
         // 释放锁
         if (!release(key, value, args)){
-          resultBuilder.status(LockResultHolder.ROLLBACK);
-          resultBuilder.build().rollback(args.rollbackCallback);
+          // 来一个回滚状态
+          if (result != null) { result.status = LockResultHolder.ROLLBACK; }
         }
       }
+      // 如果是 rollback
+      if (result.isRollback()) {
+        // 检查 回退
+        result.rollback();
+      }
+      return result;
     }else {
       // 如果有失败的则执行
       resultBuilder.status(LockResultHolder.TIMEOUT);
-      args.timeoutCallback.callback();
-      return resultBuilder.build().timeoutAfter(args.timeoutCallback);
+      return resultBuilder.build();
     }
   }
 
@@ -57,15 +62,18 @@ public abstract class AbsSpinLock implements ISharedLock<SpinSetLockArgs>{
    * @return
    */
   @Override
-  public boolean release(LockResultHolder resultHolder) {
+  public boolean unlock(LockResultHolder resultHolder) {
     // 检查是否锁定,如果不锁定，则直接释放失败
     if (resultHolder == null || !resultHolder.isLocking()){
       return false;
     }
     // 释放锁
     if (!release(resultHolder.key, resultHolder.value, (SpinSetLockArgs) resultHolder.args)){
+      resultHolder.status = LockResultHolder.ROLLBACK;
+      resultHolder.rollback();
       return false;
     }else {
+      resultHolder.status = LockResultHolder.DONE;
       return true;
     }
   }

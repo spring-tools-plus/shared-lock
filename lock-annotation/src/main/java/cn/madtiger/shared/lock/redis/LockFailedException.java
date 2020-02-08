@@ -1,4 +1,4 @@
-package cn.madtiger.shared.lock;
+package cn.madtiger.shared.lock.redis;
 
 /**
  * 锁定失败异常

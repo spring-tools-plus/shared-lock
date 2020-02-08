@@ -2,9 +2,10 @@ package org.shared.lock.demo;
 
 import java.io.IOException;
 import java.util.concurrent.TimeoutException;
-import cn.madtiger.shared.lock.ISharedLock;
-import cn.madtiger.shared.lock.LockResultHolder;
-import cn.madtiger.shared.lock.SpinSetLockArgs;
+import cn.madtiger.shared.lock.redis.ISharedLock;
+import cn.madtiger.shared.lock.redis.LockResultHolder;
+import cn.madtiger.shared.lock.redis.SpinSetLockArgs;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ import reactor.core.publisher.Flux;
  */
 @RestController
 @RequestMapping("/demo")
+@Slf4j
 public class DemoController {
 
 
@@ -30,16 +32,58 @@ public class DemoController {
 
 
   /**
+   * try-rollback 模式
+   * @return
+   * @throws IOException
+   */
+  @GetMapping("/try-rollback")
+  public Flux<String> doTryRollback() throws IOException {
+    return null;
+  }
+
+  /**
    * try 模式
    * @return
    * @throws IOException
    */
   @GetMapping("/try")
   public Flux<String> doTry() throws IOException {
-    try(LockResultHolder<Void> holder = lockService.tryLock("123123123", SpinSetLockArgs.builder().maxRetryTimes(5).build())) {
+
+    // 来一个基本模式
+    // 1. 初始化一个 所持有对象，这个对象不能重复使用
+    LockResultHolder<Void> tryHolder = LockResultHolder.newInstance();
+    try{
+      // 2. 尝试获取所并判断是否锁定成功
+      if (lockService.tryLockGet("123123123", tryHolder)){
+        // 获取锁成功
+        log.error("获取锁成功");
+      }else {
+        // 获取锁失败
+        System.out.println("获取锁失败");
+        log.error("获取锁失败");
+      }
+    } finally {
+      // 3. 释放锁
+      if (lockService.unlock(tryHolder)){
+        System.out.println("释放锁成功");
+      }else {
+        System.out.println("释放锁失败");
+      }
+    }
+
+    // 来一个 try-with-resource 模式
+    try(LockResultHolder<Flux<String>> holder = lockService.tryLock("123123123", SpinSetLockArgs.builder().maxRetryTimes(5).build())) {
       if (holder.isLocking()){
-        System.out.println("执行成功");
-        return Flux.just("OK");
+        // 支持降级的处理
+       return holder.doFallback(() -> {
+          System.out.println("执行成功");
+          return Flux.just("OK");
+        }, () -> {
+          return Flux.just("执行回退");
+        }, () -> {
+         // 这里如果返回 null，则不会覆盖 上面的 数据
+         return Flux.just("执行回滚");
+       });
       }
       System.out.println("获取所超时");
       return Flux.error(new Throwable("失败了"));
@@ -54,7 +98,7 @@ public class DemoController {
    */
   @GetMapping("/execute")
   public Flux<String> doExecute() throws TimeoutException {
-    return lockService.executeForForce("do-execute-key", () -> {
+    return lockService.executeGet("do-execute-key", () -> {
       return Flux.just("获取到锁了");
     }, () -> {
       return Flux.error(new Throwable("获取所失败"));
@@ -67,7 +111,7 @@ public class DemoController {
    * @return
    */
   @GetMapping("/aop")
-  public Flux<String> aop(@RequestParam String param){
+  public Flux<String> doAop(@RequestParam String param){
     return Flux.just(demoService.testAopLock(param));
   }
 

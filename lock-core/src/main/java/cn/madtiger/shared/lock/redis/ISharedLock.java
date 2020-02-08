@@ -1,4 +1,4 @@
-package cn.madtiger.shared.lock;
+package cn.madtiger.shared.lock.redis;
 
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
@@ -30,8 +30,8 @@ public interface ISharedLock<Args extends  SetLockArgs> {
    * @return 返回值
    * @throws TimeoutException
    */
-  default <T> T executeForForce(final String key, final Supplier<T> callback, final Supplier<T> failed)  throws TimeoutException {
-    return executeForForce(key, callback, failed, null, null);
+  default <T> T executeGet(final String key, final Supplier<T> callback, final Supplier<T> failed)  throws TimeoutException {
+    return executeGet(key, callback, failed, null, null);
   }
 
   /**
@@ -45,7 +45,7 @@ public interface ISharedLock<Args extends  SetLockArgs> {
    * @return
    * @throws java.util.concurrent.TimeoutException 如果获取失败，有没有传递 failed 函数，则抛出此异常
    */
-  default <T> T executeForForce(final String key, final Supplier<T> callback, final Supplier<T> failed, final Supplier<T> rollback, Args args)
+  default <T> T executeGet(final String key, final Supplier<T> callback, final Supplier<T> failed, final Supplier<T> rollback, Args args)
       throws TimeoutException {
     LockResultHolder<T> resultHolder = execute(key, callback, args);
     // 成功
@@ -79,24 +79,45 @@ public interface ISharedLock<Args extends  SetLockArgs> {
    * @return 结果持有对象
    * @see LockResultHolder
    */
-  default LockResultHolder<Void> tryLock(final String key){
-    return tryLock(key, null);
+  default <T> LockResultHolder<T> tryLock(final String key){
+    return tryLock(key);
   }
 
   /**
-   * 手动尝试获取锁，使用此方式获取的锁，需要自行释放，通过
+   * 获取所并返回获取结果，需要传递一个 holder
+   * @param key 锁唯一标示
+   * @param holder 锁持有者 {@link LockResultHolder#newInstance()} 通过这个方法创建
+   * @return
+   */
+ default <T> boolean tryLockGet(final String key, final LockResultHolder<T> holder) {
+   // 检查 holder 是否未初始化
+   if (LockResultHolder.INIT != holder.status){
+     throw new IllegalArgumentException("当前的 holder 已被其他锁使用，不能重复使用。");
+   }
+   LockResultHolder<T> sourceHolder = tryLock(key, (Args) holder.args);
+   // 设置值
+   holder.args = sourceHolder.args;
+   holder.key = sourceHolder.key;
+   holder.sharedLock = sourceHolder.sharedLock;
+   holder.value = sourceHolder.value;
+   holder.status = sourceHolder.status;
+   return sourceHolder.isLocking();
+ }
+
+  /**
+   * 手动尝试获取锁，使用此方式获取的锁，需要自行释放
    * @param key 锁唯一标示
    * @param args 设置参数
    * @return 结果持有对象
    * @see LockResultHolder
    */
-  LockResultHolder<Void> tryLock(final String key, final Args args);
+  <T> LockResultHolder<T> tryLock(final String key, final Args args);
 
   /**
    * 释放锁 根据 {@link #tryLock(String, SetLockArgs)} 获取的结果释放
    * @param resultHolder
    * @return
    */
-  boolean release(LockResultHolder resultHolder);
+  boolean unlock(LockResultHolder resultHolder);
 
 }

@@ -1,9 +1,5 @@
-package cn.madtiger.shared.lock.autoconfiguration;
+package cn.madtiger.shared.lock.redis;
 
-import cn.madtiger.shared.lock.AbsSpinLock;
-import cn.madtiger.shared.lock.LockResultHolder;
-import cn.madtiger.shared.lock.SetLockArgs;
-import cn.madtiger.shared.lock.SpinSetLockArgs;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;

@@ -1,4 +1,4 @@
-package cn.madtiger.shared.lock;
+package cn.madtiger.shared.lock.redis;
 
 /**
  * 失败处理策略
@@ -9,7 +9,7 @@ package cn.madtiger.shared.lock;
 public enum FaultPolicy {
 
   /**
-   * 替代，需要设置 {@link SharedLock#faultMethod()} 方法
+   * 替代，需要设置 {@link SharedLock#fallbackMethod()} 方法
    */
   REPLACE,
 
@@ -29,7 +29,7 @@ public enum FaultPolicy {
   CONTINUE,
 
   /**
-   * 自动处理, 如果 {@link SharedLock#faultMethod()} 设置了，则走 回退，否则 {@link SharedLock#throwable()} 抛出异常
+   * 自动处理, 如果 {@link SharedLock#fallbackMethod()} 设置了，则走 回退，否则 {@link SharedLock#throwable()} 抛出异常
    */
   AUTO
 

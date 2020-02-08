@@ -1,4 +1,4 @@
-package cn.madtiger.shared.lock.autoconfiguration;
+package cn.madtiger.shared.lock.redis;
 
 /**
  * redis 的 客户端接口定义

@@ -1,6 +1,6 @@
-package cn.madtiger.shared.lock;
+package cn.madtiger.shared.lock.redis;
 
-import static cn.madtiger.shared.lock.SharedLock.DEFAULT_INT;
+import static cn.madtiger.shared.lock.redis.SharedLock.DEFAULT_INT;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -75,45 +75,75 @@ public final class AnnotationProcess {
     // 获取 sharedlock
     ISharedLock<SetLockArgs> lockService = getShareLock(shareLockAnnotation);
     Objects.requireNonNull(lockService);
-    LockResultHolder<Void> holder = null;
+    LockResultHolder<Object> holder = null;
     // try finally 方式执行
-    try(LockResultHolder<Void> resultHolder = lockService.tryLock(
+    try(LockResultHolder<Object> resultHolder = lockService.tryLock(
         buildKey(shareLockAnnotation, jp.getTarget(), signature.getMethod(), params),
         buildArgs(shareLockAnnotation, jp.getTarget(), signature.getMethod(), args)
     )) {
-        // 如果获取所成功或者失败继续执行
-        if (resultHolder.isLocking()) {
-          holder = resultHolder;
-          return jp.proceed();
-        }
-
-        // 开始处理失败情况
-        // 计算失败规则
-        FaultPolicy policy = shareLockAnnotation.faultPolicy() == FaultPolicy.AUTO && !SharedLock.DEFAULT_METHOD.equals(shareLockAnnotation.faultMethod()) ? FaultPolicy.REPLACE : shareLockAnnotation.faultPolicy();
-        // 1、啥也不做
-        if (policy == FaultPolicy.DO_NOTHING){
-          return faultDoNothing(signature, shareLockAnnotation);
-        }
-
-        // 2、继续
-        if (policy == FaultPolicy.CONTINUE){
-          return jp.proceed();
-        }
-
-        // 3、回退
-        if (policy == FaultPolicy.REPLACE) {
-          return faultCallback(jp, shareLockAnnotation.faultMethod());
-        }
-
-    } finally{
-      // 是否需要 rollback
-      if (holder != null && holder.isRollback() && !SharedLock.DEFAULT_METHOD.equals(shareLockAnnotation.rollbackMethod())){
-        rollback(jp, shareLockAnnotation);
+      // 开始执行吧
+      Object resultObject = doExecute(resultHolder, jp, shareLockAnnotation);
+      holder = resultHolder;
+      holder.returnData = resultObject;
+    }
+    // 如果有值，且释放成功
+    if (holder.isDone()){
+      return holder.returnData;
+    }
+    // 是否需要 rollback
+    if (holder != null && holder.isRollback()){
+      // 如果未设置 rollback 则返回数据
+      if (SharedLock.DEFAULT_METHOD.equals(shareLockAnnotation.rollbackMethod())){
+        return holder.returnData;
+      }
+      Object rollbackData;
+      // 回滚数据
+      if ( (rollbackData = rollback(jp, shareLockAnnotation)) != NOOP){
+        holder.returnData = rollbackData;
+        return rollbackData;
+      }else {
+        // 如果没有返回数据
+        return holder.returnData;
       }
     }
 
     // 其他全算异常
     throw ClassUtils.newInstance(shareLockAnnotation.throwable());
+  }
+
+
+  /**
+   * 根据 锁的状态执行
+   * @param resultHolder
+   * @param jp
+   * @param shareLockAnnotation
+   * @return
+   * @throws Throwable
+   */
+  private Object doExecute(LockResultHolder<Object> resultHolder, ProceedingJoinPoint jp, SharedLock shareLockAnnotation) throws Throwable{
+    MethodSignature signature = (MethodSignature) jp.getSignature();
+    // 如果获取所成功或者失败继续执行
+    if (resultHolder.isLocking()) {
+      return jp.proceed();
+    }
+    // 开始处理失败情况
+    // 计算失败规则
+    FaultPolicy policy = shareLockAnnotation.faultPolicy() == FaultPolicy.AUTO && !SharedLock.DEFAULT_METHOD.equals(shareLockAnnotation.fallbackMethod()) ? FaultPolicy.REPLACE : shareLockAnnotation.faultPolicy();
+    // 1、啥也不做
+    if (policy == FaultPolicy.DO_NOTHING){
+      return faultDoNothing(signature, shareLockAnnotation);
+    }
+
+    // 2、继续
+    if (policy == FaultPolicy.CONTINUE){
+      return jp.proceed();
+    }
+
+    // 3、回退
+    if (policy == FaultPolicy.REPLACE) {
+      return faultCallback(jp, shareLockAnnotation.fallbackMethod());
+    }
+    return NOOP;
   }
 
   /**
@@ -159,11 +189,15 @@ public final class AnnotationProcess {
    * @param jp
    * @param shareLockAnnotation
    */
-  private void rollback(ProceedingJoinPoint jp, SharedLock shareLockAnnotation)
+  private Object rollback(ProceedingJoinPoint jp, SharedLock shareLockAnnotation)
       throws NoSuchMethodException, InvocationTargetException, IllegalAccessException {
     MethodSignature signature = (MethodSignature) jp.getSignature();
     Method method = jp.getTarget().getClass().getMethod(shareLockAnnotation.rollbackMethod(), signature.getParameterTypes());
-    method.invoke(jp.getTarget(), jp.getArgs());
+    if (method.getReturnType() != null && method.getReturnType().isAssignableFrom(((MethodSignature) jp.getSignature()).getReturnType())){
+      return method.invoke(jp.getTarget(), jp.getArgs());
+    } else {
+      return NOOP;
+    }
   }
 
   /**
@@ -266,4 +300,6 @@ public final class AnnotationProcess {
     return key;
   }
 
+
+  private static final Object NOOP = new Object();
 }
