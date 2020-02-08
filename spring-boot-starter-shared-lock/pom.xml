@@ -9,8 +9,16 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>lock-core</artifactId>
-
-
-
+  <artifactId>spring-boot-starter-shared-lock</artifactId>
+  <dependencies>
+    <dependency>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>lock-annotation</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-autoconfigure</artifactId>
+    </dependency>
+  </dependencies>
 </project>

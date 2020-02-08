@@ -9,33 +9,17 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>lock-demo</artifactId>
-
+  <artifactId>spring-boot-starter</artifactId>
   <dependencies>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>spring-boot-starter-shared-lock</artifactId>
+      <artifactId>lock-annotation</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-webflux</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-redis</artifactId>
+      <artifactId>spring-boot-autoconfigure</artifactId>
     </dependency>
   </dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 </project>

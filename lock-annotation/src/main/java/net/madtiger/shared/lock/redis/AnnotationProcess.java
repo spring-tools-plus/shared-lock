@@ -18,7 +18,7 @@ import org.springframework.util.StringUtils;
  * 将  用于处理 含有 {@link SharedLock} 注解的方法
  * @author Fenghu.Shi
  * @version 1.0
- * @see {@link SpinSetLockArgs}
+ * @see SpinSetLockArgs
  */
 public final class AnnotationProcess {
 
@@ -36,9 +36,9 @@ public final class AnnotationProcess {
 
   /**
    * 执行
-   * @param jp
-   * @return
-   * @throws Throwable
+   * @param jp 切入点
+   * @return 执行后的数据
+   * @throws Throwable 异常
    */
   public final Object handle(ProceedingJoinPoint jp) throws Throwable {
     MethodSignature signature = (MethodSignature) jp.getSignature();
@@ -55,10 +55,10 @@ public final class AnnotationProcess {
 
   /**
    * 锁执行
-   * @param jp
-   * @param shareLockAnnotation
-   * @return
-   * @throws Throwable
+   * @param jp 切入点
+   * @param shareLockAnnotation 注解实例
+   * @return 执行结果
+   * @throws Throwable  其他异常
    */
   private Object lockExecute(ProceedingJoinPoint jp, SharedLock shareLockAnnotation) throws Throwable  {
     MethodSignature signature = (MethodSignature) jp.getSignature();
