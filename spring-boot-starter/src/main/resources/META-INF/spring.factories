@@ -1,3 +1,3 @@
 # Auto Configure
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
-org.madtiger.shared.lock.autoconfiguration.SharedLockRedisAutoConfiguration\
+cn.madtiger.shared.lock.autoconfiguration.SharedLockRedisAutoConfiguration\

@@ -1,9 +1,10 @@
 package org.shared.lock.demo;
 
 import java.io.IOException;
-import org.madtiger.shared.lock.ISharedLock;
-import org.madtiger.shared.lock.LockResultHolder;
-import org.madtiger.shared.lock.SpinSetLockArgs;
+import java.util.concurrent.TimeoutException;
+import cn.madtiger.shared.lock.ISharedLock;
+import cn.madtiger.shared.lock.LockResultHolder;
+import cn.madtiger.shared.lock.SpinSetLockArgs;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,8 +28,14 @@ public class DemoController {
   @Autowired
   private DemoService demoService;
 
-  @GetMapping("/get")
-  public Flux<String> get() throws IOException {
+
+  /**
+   * try 模式
+   * @return
+   * @throws IOException
+   */
+  @GetMapping("/try")
+  public Flux<String> doTry() throws IOException {
     try(LockResultHolder<Void> holder = lockService.tryLock("123123123", SpinSetLockArgs.builder().maxRetryTimes(5).build())) {
       if (holder.isLocking()){
         System.out.println("执行成功");
@@ -37,6 +44,21 @@ public class DemoController {
       System.out.println("获取所超时");
       return Flux.error(new Throwable("失败了"));
     }
+  }
+
+
+  /**
+   * execute 模式
+   * @return
+   * @throws TimeoutException
+   */
+  @GetMapping("/execute")
+  public Flux<String> doExecute() throws TimeoutException {
+    return lockService.executeForForce("do-execute-key", () -> {
+      return Flux.just("获取到锁了");
+    }, () -> {
+      return Flux.error(new Throwable("获取所失败"));
+    });
   }
 
   /**

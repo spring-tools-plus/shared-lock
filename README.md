@@ -1,6 +1,6 @@
 # shared-lock
 
-#### 介绍
+## 介绍
 分布式共享锁，暂时支持 redis，支持多种模式
 1. try/finally 原始模式
 2. callback 回调模式，类似 JdbcTemplate execute
@@ -8,16 +8,20 @@
 
 支持 enable 引用 和 starter 的开箱即用方式。
 
-#### 软件架构
+## 软件架构
 
 依赖 spring + spring-data-redis
 
 
-#### 安装教程
+## 安装教程
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+安装方式，主要支持两种自动注入方式：enabled 和 spring boot starter 
+
+### enabled 模式
+
+1. 引入
+
+
 
 #### 使用说明
 
