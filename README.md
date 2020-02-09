@@ -27,7 +27,7 @@
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>lock-annotation</artifactId>
-   <version>1.0.0-RELEASE</version>
+   <version>1.0.5</version>
 </dependency>
 ```
 
@@ -57,7 +57,7 @@ public class DisLockApplication {
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>spring-boot-starter-shared-lock</artifactId>
-   <version>1.0.0-RELEASE</version>
+   <version>1.0.5</version>
 </dependency>
 ```
 
@@ -76,7 +76,7 @@ public class DisLockApplication {
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>lock-annotation</artifactId>
-   <version>1.0.0-RELEASE</version>
+   <version>1.0.5</version>
 </dependency>
 ```
 
