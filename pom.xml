@@ -5,6 +5,10 @@
   <artifactId>shared-lock</artifactId>
   <version>1.0.4-SNAPSHOT</version>
   <packaging>pom</packaging>
+
+  <description>分布式共享锁，暂时支持 redis，支持多种模式</description>
+  <url>https://github.com/spring-tools-plus/shared-lock</url>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -181,9 +185,6 @@
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-gpg-plugin</artifactId>
-            <configuration>
-              <keyname>587EB655</keyname>
-            </configuration>
             <executions>
               <execution>
                 <id>sign-artifacts</id>
