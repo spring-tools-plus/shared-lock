@@ -15,6 +15,7 @@ target/
 *.xml.tag
 *.xml.next
 *.xml.releaseBackup
+*.versionsBackup
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
