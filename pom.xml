@@ -6,6 +6,7 @@
   <version>1.0.5-SNAPSHOT</version>
   <packaging>pom</packaging>
 
+  <name>Shared Lock</name>
   <description>分布式共享锁，暂时支持 redis，支持多种模式</description>
   <url>https://github.com/spring-tools-plus/shared-lock</url>
 
