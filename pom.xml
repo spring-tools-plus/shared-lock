@@ -109,7 +109,7 @@
 
   <scm>
     <url>https://github.com/spring-tools-plus/shared-lock</url>
-    <connection>scm:git:ssh://github.com/spring-tools-plus/shared-lock.git</connection>
+    <connection>scm:git:ssh://git@github.com/spring-tools-plus/shared-lock.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/spring-tools-plus/shared-lock.git</developerConnection>
     <tag>HEAD</tag>
   </scm>
