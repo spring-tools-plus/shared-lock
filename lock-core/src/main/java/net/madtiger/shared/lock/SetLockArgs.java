@@ -1,6 +1,7 @@
-package net.madtiger.shared.lock.redis;
+package net.madtiger.shared.lock;
 
 import java.util.function.Supplier;
+import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Getter;
 
@@ -10,7 +11,8 @@ import lombok.Getter;
  * @version 1.0
  */
 @Getter
-public abstract class SetLockArgs {
+@Builder
+public class SetLockArgs {
 
   /**
    * 默认网络超时时间，毫秒
@@ -20,7 +22,7 @@ public abstract class SetLockArgs {
   /**
    * 默认锁超时等待时间
    */
-  public static final int WAIT_TIMEOUT_SECENDS = 2;
+  public static final int WAIT_TIMEOUT_SECENDS = 5;
 
   /**
    * 默认int 值，{@link #maxRetryTimes} 和 {@link #lockedSeconds} 默认值均是此值
@@ -36,16 +38,22 @@ public abstract class SetLockArgs {
    * 锁超等待超时时间，总的获取时间，该时间应该大于等于 {@link #getTimeoutMills} ，单位秒，默认2秒
    */
   @Default
-  int waitTimeoutSeconds = WAIT_TIMEOUT_SECENDS;
+  int waitTimeoutMills = WAIT_TIMEOUT_SECENDS * 1000;
 
   /**
-   * 尝试次数，-1表示不限制，以 {@link #waitTimeoutSeconds} 为准
+   * 尝试次数，-1表示不限制，以 {@link #waitTimeoutMills} 为准
    */
   @Default
   int maxRetryTimes = DEFAULT_INT;
 
   /**
-   * 锁定时间，单位秒，默认是 4 倍的{@link #waitTimeoutSeconds}锁时间
+   * 每次自旋的次数
+   */
+  @Default
+  int spinTimes = 3;
+
+  /**
+   * 锁定时间，单位秒，默认是 4 倍的{@link #waitTimeoutMills}锁时间
    */
   @Default
   int lockedSeconds = DEFAULT_INT;
@@ -73,7 +81,7 @@ public abstract class SetLockArgs {
    * @return
    */
   public int getLockedSeconds() {
-    return lockedSeconds <= 0 ? 3 * waitTimeoutSeconds : lockedSeconds;
+    return lockedSeconds <= 0 ? 3 * waitTimeoutMills / 1000 : lockedSeconds;
   }
 
 }

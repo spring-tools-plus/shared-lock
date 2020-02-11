@@ -1,4 +1,4 @@
-package net.madtiger.shared.lock.redis;
+package net.madtiger.shared.lock;
 
 /**
  * callback  接口，用于一些回调执行场景

@@ -27,8 +27,21 @@
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>lock-annotation</artifactId>
-   <version>1.0.5</version>
+   <version>1.0.6</version>
 </dependency>
+<!-- redis -->
+<dependency>
+   <groupId>net.madtiger.shared.lock</groupId>
+   <artifactId>lock-redis</artifactId>
+   <version>1.0.6</version>
+</dependency>
+<!-- zookeeper -->
+<dependency>
+   <groupId>net.madtiger.shared.lock</groupId>
+   <artifactId>lock-zookeeper</artifactId>
+   <version>1.0.6</version>
+</dependency>
+
 ```
 
 2. 开启引用
@@ -59,6 +72,18 @@ public class DisLockApplication {
    <artifactId>spring-boot-starter-shared-lock</artifactId>
    <version>1.0.5</version>
 </dependency>
+<!-- redis -->
+<dependency>
+   <groupId>net.madtiger.shared.lock</groupId>
+   <artifactId>lock-redis</artifactId>
+   <version>1.0.6</version>
+</dependency>
+<!-- zookeeper -->
+<dependency>
+   <groupId>net.madtiger.shared.lock</groupId>
+   <artifactId>lock-zookeeper</artifactId>
+   <version>1.0.6</version>
+</dependency>
 ```
 
 2. 配置 spring data redis
@@ -78,6 +103,18 @@ public class DisLockApplication {
    <artifactId>lock-annotation</artifactId>
    <version>1.0.5</version>
 </dependency>
+<!-- redis -->
+<dependency>
+   <groupId>net.madtiger.shared.lock</groupId>
+   <artifactId>lock-redis</artifactId>
+   <version>1.0.6</version>
+</dependency>
+<!-- zookeeper -->
+<dependency>
+   <groupId>net.madtiger.shared.lock</groupId>
+   <artifactId>lock-zookeeper</artifactId>
+   <version>1.0.6</version>
+</dependency>
 ```
 
 ### 2. 初始化 service bean
@@ -87,8 +124,9 @@ SharedLock 组件使用主要涉及三个类
 1. SpringRedisLockClient 
 用于 操作 redis 的客户端 ，底层是通过 spring-data-redis 的 RedisTemplate 实现的
 
-2. RedisLockService
+2. RedisLockService / ZookeeperLockService
 分布式锁的Redis具体实现类
+
 
 3. SharedLockInterceptor 
 用于支持 AOP 模式的拦截器，这里是可选的，如果不需要支持 拦截器则不用实例化
@@ -167,7 +205,7 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 ```java
 
 // 来一个 try-with-resource 模式
-    try(LockResultHolder<Flux<String>> holder = lockService.tryLock("123123123", SpinSetLockArgs.builder().maxRetryTimes(5).build())) {
+    try(LockResultHolder<Flux<String>> holder = lockService.tryLock("123123123", SetLockArgs.builder().maxRetryTimes(5).build())) {
       if (holder.isLocking()){
         // 支持降级的处理
        return holder.doFallback(() -> {
@@ -220,6 +258,9 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 
 ##  版本更新
 
+* 1.0.6-RELEASE 发布 （2020-02-11）
+
+支持 zookeeper 的 Zookeeper 客户端（CuratorFramework 待完成..）
 
 * 1.0.0-RELEASE 发布 （2020-02-08）
 

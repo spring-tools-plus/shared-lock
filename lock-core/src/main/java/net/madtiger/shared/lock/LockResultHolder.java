@@ -1,11 +1,16 @@
-package net.madtiger.shared.lock.redis;
+package net.madtiger.shared.lock;
 
 import java.io.Closeable;
 import java.io.IOException;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 import lombok.Builder;
 import lombok.Builder.Default;
+import lombok.Getter;
+import lombok.Setter;
+import net.madtiger.shared.lock.ISharedLock;
+import net.madtiger.shared.lock.SetLockArgs;
 
 /**
  * 锁获取结果
@@ -13,6 +18,7 @@ import lombok.Builder.Default;
  * @version 1.0
  */
 @Builder
+@Getter
 public class LockResultHolder<T> implements Closeable {
 
 
@@ -67,6 +73,16 @@ public class LockResultHolder<T> implements Closeable {
    * redis 锁
    */
   ISharedLock sharedLock;
+
+  /**
+   * 扩展参数1
+   */
+  Object param1;
+
+  /**
+   * 扩展参数2
+   */
+  Object param2;
 
   /**
    * 回退函数
@@ -138,6 +154,14 @@ public class LockResultHolder<T> implements Closeable {
   }
 
   /**
+   * 是否可能需要释放资源
+   * @return
+   */
+  public boolean mybeRelease(){
+    return status == LOCKING || status == TIMEOUT;
+  }
+
+  /**
    * 是否超时
    * @return
    */
@@ -197,7 +221,7 @@ public class LockResultHolder<T> implements Closeable {
   @Override
   public void close() throws IOException {
     // 检查是否已经释放
-    if (sharedLock == null || !isLocking()){
+    if (sharedLock == null || !mybeRelease()){
       return;
     }
     sharedLock.unlock(this);

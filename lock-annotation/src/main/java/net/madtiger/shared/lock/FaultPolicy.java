@@ -1,4 +1,4 @@
-package net.madtiger.shared.lock.redis;
+package net.madtiger.shared.lock;
 
 /**
  * 失败处理策略

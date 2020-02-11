@@ -1,7 +1,7 @@
 package org.shared.lock.demo;
 
 import lombok.extern.slf4j.Slf4j;
-import net.madtiger.shared.lock.redis.SharedLock;
+import net.madtiger.shared.lock.SharedLock;
 import org.springframework.stereotype.Service;
 
 /**

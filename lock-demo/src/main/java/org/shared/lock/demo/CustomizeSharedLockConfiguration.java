@@ -1,9 +1,6 @@
 package org.shared.lock.demo;
 
-import net.madtiger.shared.lock.redis.ISharedLock;
-import net.madtiger.shared.lock.redis.RedisLockService;
-import net.madtiger.shared.lock.redis.SpinSetLockArgs;
-import net.madtiger.shared.lock.redis.SpringRedisLockClient;
+import net.madtiger.shared.lock.ISharedLock;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -21,8 +18,9 @@ public class CustomizeSharedLockConfiguration {
    * @return
    */
   @Bean
-  public ISharedLock<SpinSetLockArgs> defaultSharedLock(ObjectProvider<RedisTemplate> redisTemplate){
-    return new RedisLockService(new SpringRedisLockClient(redisTemplate.getIfAvailable()));
+  public ISharedLock defaultSharedLock(ObjectProvider<RedisTemplate> redisTemplate){
+   // return new RedisLockService(new RedisLockClient(redisTemplate.getIfAvailable()));
+    return null;
   }
 
 }

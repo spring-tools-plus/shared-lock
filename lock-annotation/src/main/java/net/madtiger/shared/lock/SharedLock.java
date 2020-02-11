@@ -1,4 +1,4 @@
-package net.madtiger.shared.lock.redis;
+package net.madtiger.shared.lock;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -40,11 +40,11 @@ public @interface SharedLock {
   /**
    * 最大等待时间，单位秒
    */
-  int waitTimeoutSeconds() default DEFAULT_INT;
+  int waitTimeoutMills() default DEFAULT_INT;
 
   /**
    * 最大重试次数
-   * 默认不限制，以 {@link #waitTimeoutSeconds()} 为准，如果设置了，则满足一个即退出
+   * 默认不限制，以 {@link #waitTimeoutMills()} 为准，如果设置了，则满足一个即退出
    */
   int maxRetryTimes() default DEFAULT_INT;
 

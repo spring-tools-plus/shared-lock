@@ -1,4 +1,4 @@
-package net.madtiger.shared.lock.redis.configuration;
+package net.madtiger.shared.lock.configuration;
 
 /**
  *
@@ -8,5 +8,6 @@ package net.madtiger.shared.lock.redis.configuration;
  * @version 1.0
  */
 public interface ISharedLockConfiguration {
+
 
 }
