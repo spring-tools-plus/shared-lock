@@ -1,6 +1,8 @@
 package net.madtiger.shared.lock;
 
-import com.sun.istack.internal.Nullable;
+
+import org.springframework.lang.Nullable;
+
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;

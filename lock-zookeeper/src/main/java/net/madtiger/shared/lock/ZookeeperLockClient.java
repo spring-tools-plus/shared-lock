@@ -1,6 +1,6 @@
 package net.madtiger.shared.lock;
 
-import com.sun.istack.internal.Nullable;
+import org.springframework.lang.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;

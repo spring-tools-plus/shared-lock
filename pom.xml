@@ -7,7 +7,7 @@
   <packaging>pom</packaging>
 
   <name>Shared Lock</name>
-  <description>分布式共享锁，暂时支持 redis，支持多种模式</description>
+  <description>分布式共享锁，支持多种模式</description>
   <url>https://github.com/spring-tools-plus/shared-lock</url>
 
   <properties>
@@ -22,6 +22,10 @@
       <artifactId>lombok</artifactId>
       <optional>true</optional>
       <version>1.18.10</version>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-context</artifactId>
     </dependency>
   </dependencies>
   <dependencyManagement>
