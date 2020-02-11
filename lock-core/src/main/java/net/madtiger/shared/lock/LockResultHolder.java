@@ -108,7 +108,7 @@ public class LockResultHolder<T> implements Closeable {
   /**
    * 支持 降级和回滚 方式执行，此方法会在执行完callback 方法后，立即释放资源，再执行 rollback（如果需要），故必须保证 callback 方法执行完后可以立即释放锁。
    * @param callback 成功执行
-   * @param fallback 获取所失败执行函数
+   * @param fallback 获取锁失败执行函数
    * @param rollback 回滚执行
    * @return 如果 已经执行完，则返回 callback 值，否则返回 null
    */

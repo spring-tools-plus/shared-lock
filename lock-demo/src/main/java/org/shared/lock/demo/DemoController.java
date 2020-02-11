@@ -75,20 +75,18 @@ public class DemoController {
 
     // 来一个 try-with-resource 模式
     try(LockResultHolder<Flux<String>> holder = lockService.tryLock("12312355123", SetLockArgs.builder().maxRetryTimes(5).build())) {
-      if (holder.isLocking()){
-        // 支持降级的处理
-       return holder.doFallback(() -> {
-          System.out.println("执行成功");
-         return Flux.just("OK");
-        }, () -> {
-          return Flux.just("执行回退");
-        }, () -> {
-         // 这里如果返回 null，则不会覆盖 上面的 数据
-         return Flux.just("执行回滚");
-       });
-      }
-      System.out.println("获取所超时");
-      return Flux.error(new Throwable("失败了"));
+      // 支持降级的处理
+      return holder.doFallback(() -> {
+        System.out.println("执行成功");
+        return Flux.just("OK");
+      }, () -> {
+        // 这里可以执行回退或者异常检查
+        return Flux.error(new Throwable("失败了"));
+      }, () -> {
+        // 这里如果返回 null，则不会覆盖 上面的 数据
+        return Flux.just("执行回滚");
+      });
+
     }
   }
 
