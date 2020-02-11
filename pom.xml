@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.madtiger.shared.lock</groupId>
   <artifactId>shared-lock</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.7-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>Shared Lock</name>
@@ -145,7 +145,7 @@
     <url>https://github.com/spring-tools-plus/shared-lock</url>
     <connection>scm:git:ssh://git@github.com/spring-tools-plus/shared-lock.git</connection>
     <developerConnection>scm:git:ssh://git@github.com/spring-tools-plus/shared-lock.git</developerConnection>
-    <tag>shared-lock-1.0.6</tag>
+    <tag>HEAD</tag>
   </scm>
 
 
