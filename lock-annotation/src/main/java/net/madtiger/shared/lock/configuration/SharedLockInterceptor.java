@@ -1,10 +1,10 @@
-package net.madtiger.shared.lock.redis.configuration;
+package net.madtiger.shared.lock.configuration;
 
 import java.util.Objects;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import net.madtiger.shared.lock.redis.AnnotationProcess;
+import net.madtiger.shared.lock.AnnotationProcess;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -32,7 +32,7 @@ public class SharedLockInterceptor {
    * @return
    * @throws Throwable
    */
-  @Around("@annotation(net.madtiger.shared.lock.redis.SharedLock)")
+  @Around("@annotation(net.madtiger.shared.lock.SharedLock)")
   public Object handle(ProceedingJoinPoint point) throws Throwable{
     return annotationProcess.handle(point);
   }

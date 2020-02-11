@@ -1,7 +1,7 @@
-package net.madtiger.shared.lock.redis;
+package net.madtiger.shared.lock;
 
 
-import net.madtiger.shared.lock.redis.configuration.SharedLockConfigurationImportSelector;
+import net.madtiger.shared.lock.configuration.SharedLockConfigurationImportSelector;
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

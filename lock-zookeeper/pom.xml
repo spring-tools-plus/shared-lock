@@ -9,43 +9,31 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>lock-demo</artifactId>
+  <artifactId>lock-zookeeper</artifactId>
+
 
   <dependencies>
     <dependency>
-      <groupId>${project.groupId}</groupId>
-      <artifactId>spring-boot-starter-shared-lock</artifactId>
-      <version>${project.version}</version>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-redis</artifactId>
     </dependency>
     <dependency>
       <groupId>${project.groupId}</groupId>
-      <artifactId>lock-zookeeper</artifactId>
+      <artifactId>lock-core</artifactId>
       <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>org.apache.curator</groupId>
       <artifactId>curator-recipes</artifactId>
+      <optional>true</optional>
     </dependency>
     <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-webflux</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-data-redis</artifactId>
+      <groupId>${project.groupId}</groupId>
+      <artifactId>lock-core</artifactId>
+      <version>${project.version}</version>
+      <scope>compile</scope>
     </dependency>
   </dependencies>
 
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <configuration>
-            <skip>true</skip>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
+
 </project>

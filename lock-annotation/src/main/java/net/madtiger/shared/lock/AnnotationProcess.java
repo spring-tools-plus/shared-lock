@@ -1,6 +1,6 @@
-package net.madtiger.shared.lock.redis;
+package net.madtiger.shared.lock;
 
-import static net.madtiger.shared.lock.redis.SharedLock.DEFAULT_INT;
+import static net.madtiger.shared.lock.SharedLock.DEFAULT_INT;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -18,7 +18,7 @@ import org.springframework.util.StringUtils;
  * 将  用于处理 含有 {@link SharedLock} 注解的方法
  * @author Fenghu.Shi
  * @version 1.0
- * @see SpinSetLockArgs
+ * @see SetLockArgs
  */
 public final class AnnotationProcess {
 
@@ -73,7 +73,7 @@ public final class AnnotationProcess {
     }
 
     // 获取 sharedlock
-    ISharedLock<SetLockArgs> lockService = getShareLock(shareLockAnnotation);
+    ISharedLock lockService = getShareLock(shareLockAnnotation);
     Objects.requireNonNull(lockService);
     LockResultHolder<Object> holder = null;
     // try finally 方式执行
@@ -110,7 +110,6 @@ public final class AnnotationProcess {
     // 其他全算异常
     throw ClassUtils.newInstance(shareLockAnnotation.throwable());
   }
-
 
   /**
    * 根据 锁的状态执行
@@ -205,7 +204,7 @@ public final class AnnotationProcess {
    * @param lock
    * @return
    */
-  private ISharedLock<SetLockArgs> getShareLock(SharedLock lock){
+  private ISharedLock getShareLock(SharedLock lock){
     // 默认，则根据类型获取
     if (SharedLock.DEFAULT_PROVIDER.equals(lock.provider()) || StringUtils.isEmpty(lock.provider())) {
       return beanFactory.getBean(ISharedLock.class);
@@ -223,8 +222,8 @@ public final class AnnotationProcess {
    * @param args
    * @return
    */
-  private SpinSetLockArgs buildArgs(SharedLock lock, Object target, Method method, Object[] args){
-    SpinSetLockArgs.SpinSetLockArgsBuilder builder = SpinSetLockArgs.builder();
+  private SetLockArgs buildArgs(SharedLock lock, Object target, Method method, Object[] args){
+    SetLockArgs.SetLockArgsBuilder builder = SetLockArgs.builder();
 
     // 网络超时时间
     if (lock.getTimeoutMills() != DEFAULT_INT) {
@@ -242,8 +241,8 @@ public final class AnnotationProcess {
     }
 
     // 最大等待时间
-    if (lock.waitTimeoutSeconds() != DEFAULT_INT) {
-      builder.waitTimeoutSeconds(lock.waitTimeoutSeconds());
+    if (lock.waitTimeoutMills() != DEFAULT_INT) {
+      builder.waitTimeoutMills(lock.waitTimeoutMills());
     }
 
     // 自旋次数
