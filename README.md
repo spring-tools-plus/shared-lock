@@ -38,19 +38,19 @@
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>lock-annotation</artifactId>
-   <version>1.0.6</version>
+   <version>${lastVersion}</version>
 </dependency>
 <!-- redis -->
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>lock-redis</artifactId>
-   <version>1.0.6</version>
+   <version>${lastVersion}</version>
 </dependency>
 <!-- zookeeper -->
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>lock-zookeeper</artifactId>
-   <version>1.0.6</version>
+   <version>${lastVersion}</version>
 </dependency>
 
 ```
@@ -81,19 +81,19 @@ public class DisLockApplication {
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>spring-boot-starter-shared-lock</artifactId>
-   <version>1.0.5</version>
+   <version>${lastVersion}</version>
 </dependency>
 <!-- redis -->
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>lock-redis</artifactId>
-   <version>1.0.6</version>
+   <version>${lastVersion}</version>
 </dependency>
 <!-- zookeeper -->
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>lock-zookeeper</artifactId>
-   <version>1.0.6</version>
+   <version>${lastVersion}</version>
 </dependency>
 ```
 
@@ -112,19 +112,19 @@ public class DisLockApplication {
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>lock-annotation</artifactId>
-   <version>1.0.5</version>
+   <version>${lastVersion}</version>
 </dependency>
 <!-- redis -->
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>lock-redis</artifactId>
-   <version>1.0.6</version>
+   <version>${lastVersion}</version>
 </dependency>
 <!-- zookeeper -->
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
    <artifactId>lock-zookeeper</artifactId>
-   <version>1.0.6</version>
+   <version>${lastVersion}</version>
 </dependency>
 ```
 
@@ -265,7 +265,7 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 
 3. 其他参数
 
-见 `SharedLock`
+见 `ISharedLock`
 
 
 
