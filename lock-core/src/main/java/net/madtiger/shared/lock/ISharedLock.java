@@ -10,6 +10,8 @@ import java.util.function.Supplier;
 
 /**
  * 共享锁接口，此接口的所有方法均为同步方法
+ * @author Fenghu.Shi
+ * @version 1.0
  * @see LockResultHolder
  */
 public interface ISharedLock {
@@ -23,7 +25,7 @@ public interface ISharedLock {
    * @return 结果持有对象
    */
   default <T> LockResultHolder<T> execute(final String key, final Supplier<T> callback) {
-    return execute(key, callback, SetLockArgs.builder().build());
+    return execute(key, callback, SetLockArgs.buildDefaultArgs());
   }
 
   /**
@@ -36,7 +38,7 @@ public interface ISharedLock {
    * @throws TimeoutException
    */
   default <T> T executeGet(final String key, final Supplier<T> callback, @Nullable final Supplier<T> failed)  throws TimeoutException {
-    return executeGet(key, callback, failed, null, SetLockArgs.builder().build());
+    return executeGet(key, callback, failed, null, SetLockArgs.buildDefaultArgs());
   }
 
   /**
@@ -48,11 +50,11 @@ public interface ISharedLock {
    * @param args 参数
    * @param <T>
    * @return
-   * @throws java.util.concurrent.TimeoutException 如果获取失败，有没有传递 failed 函数，则抛出此异常
+   * @throws TimeoutException 如果获取失败，有没有传递 failed 函数，则抛出此异常
    */
   default <T> T executeGet(final String key, final Supplier<T> callback, @Nullable final Supplier<T> failed, @Nullable final Supplier<T> rollback, @Nullable SetLockArgs args)
       throws TimeoutException {
-    args = args == null ? SetLockArgs.builder().build() : args;
+    args = args == null ? SetLockArgs.buildDefaultArgs() : args;
     LockResultHolder<T> resultHolder = execute(key, callback, args);
     // 成功
     if (resultHolder.isDone()){
@@ -82,7 +84,7 @@ public interface ISharedLock {
   /**
    * 在特定等待时间内尝试获取锁
    * @param key 锁的唯一表示
-   * @param waitTimeout 等待超时时间
+   * @param waitTimeout 等待超时时间 <=0 表示单次获取
    * @param unit 时间单位
    * @param holder 结果持有对象，用于后面释放锁
    * @param <T> 返回值类型
@@ -93,10 +95,25 @@ public interface ISharedLock {
     if (TimeUnit.MILLISECONDS != unit && TimeUnit.SECONDS != unit) {
       throw new IllegalArgumentException("waitTimeout 仅支持 MILLISECONDS 和 SECONDS 单位");
     }
-    SetLockArgs args = holder.args == null ? SetLockArgs.builder().build() : holder.args;
+    if (!(holder instanceof LockResultHolderWrapper)){
+      throw new IllegalArgumentException("holder 请使用正确方式(net.madtiger.shared.lock.LockResultHolder.newInstance())方法创建！");
+    }
+    LockResultHolderWrapper holderWrapper = (LockResultHolderWrapper) holder;
+    if (holderWrapper.getDelegate() != null){
+      throw new IllegalArgumentException("holder 请使用正确方式(net.madtiger.shared.lock.LockResultHolder.newInstance())方法创建！");
+    }
+    SetLockArgs args = holder.args == null ? SetLockArgs.buildDefaultArgs() : holder.args;
+    // 如果小于等于0则认为是单次获取
+    if (waitTimeout <= 0 ) {
+      //设置最大尝试次数为1
+      args.maxRetryTimes = 1;
+    }else {
+      args.waitTimeoutMills = (int) unit.toMillis(Long.valueOf(waitTimeout));
+    }
     holder.args = args;
-    args.waitTimeoutMills = (int) unit.toMillis(Long.valueOf(waitTimeout));
-    return tryLockGet(key, holder);
+    LockResultHolder<T> sourceHolder = tryLock(key, holder.args);
+    holderWrapper.setDelegate(sourceHolder);
+    return sourceHolder.isLocking();
   }
 
 
@@ -107,21 +124,7 @@ public interface ISharedLock {
    * @return
    */
  default <T> boolean tryLockGet(final String key, final LockResultHolder<T> holder) {
-   Objects.requireNonNull(holder);
-   // 检查 holder 是否未初始化
-   if (LockResultHolder.INIT != holder.status){
-     throw new IllegalArgumentException("当前的 holder 已被其他锁使用，不能重复使用。");
-   }
-   LockResultHolder<T> sourceHolder = tryLock(key, holder.args);
-   // 设置值
-   holder.args = sourceHolder.args;
-   holder.key = sourceHolder.key;
-   holder.sharedLock = sourceHolder.sharedLock;
-   holder.value = sourceHolder.value;
-   holder.status = sourceHolder.status;
-   holder.param1 = sourceHolder.param1;
-   holder.param2 = sourceHolder.param2;
-   return sourceHolder.isLocking();
+    return tryLockGet(key, -1, TimeUnit.MILLISECONDS, null);
  }
 
 
@@ -169,9 +172,10 @@ public interface ISharedLock {
 
   /**
    * 释放锁 根据 {@link #tryLock(String, SetLockArgs)} 获取的结果释放
-   * @param resultHolder
-   * @return
+   * @param resultHolder 锁持有者
+   * @return  解锁结果
+   * @throws LockReleaseException 持有锁时，解锁失败抛出磁异常，使用此异常进行 rollback 操作
    */
-  boolean unlock(LockResultHolder resultHolder);
+  boolean unlock(LockResultHolder resultHolder) throws LockReleaseException;
 
 }

@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Import;
 
 /**
  * 开启 共享锁
+ * @author Fenghu.Shi
+ * @version 1.0
  **/
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)

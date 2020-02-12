@@ -13,6 +13,7 @@ import org.springframework.core.annotation.AliasFor;
  * 共享锁配置
  * @author fenghu.shi
  * @version 1.0
+ * @see SetLockArgs
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
@@ -63,11 +64,6 @@ public @interface SharedLock {
    * 每次重试时，最大 sleep 时间
    */
   int sleepMaxMills() default DEFAULT_INT;
-
-  /**
-   * 从数据中心交互数据时网络超时时间
-   */
-  int getTimeoutMills() default DEFAULT_INT;
 
   /**
    * 自旋次数，该参数只对 {@link AbsSpinLock} 锁有效

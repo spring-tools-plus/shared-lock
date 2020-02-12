@@ -1,9 +1,8 @@
 package net.madtiger.shared.lock;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
 /**
@@ -11,8 +10,7 @@ import java.util.function.Supplier;
  * @author Fenghu.Shi
  * @version 1.0
  */
-public abstract class AbsSharedLock implements ISharedLock{
-
+public abstract class AbsSharedLock implements ISharedLock {
 
   /**
    * 锁实现
@@ -26,95 +24,76 @@ public abstract class AbsSharedLock implements ISharedLock{
   public <T> LockResultHolder<T> execute(String key, Supplier<T> callback,
       SetLockArgs args) {
     Objects.requireNonNull(callback);
-    args = args == null ? SetLockArgs.builder().build() : args;
-    LockResultHolder<T> resultHolder = (LockResultHolder<T>) LockResultHolder
-        .builder().sharedLock(this).args(args).key(key).value(UUID.randomUUID().toString()).build();
-    // 尝试获取锁
-    try{
-      if (tryAcquire(resultHolder)){
-        try {
-          resultHolder.status = LockResultHolder.DONE;
+    // 获取一个锁
+    try(LockResultHolder<T> resultHolder = tryLock(key, args)){
+      // 如果获取成功，则执行 回调
+      if (resultHolder.isLocking()){
           resultHolder.returnData = callback.get();
-        } finally{
-          // 释放锁
-          if (!release(resultHolder)){
-            // 来一个回滚状态
-            resultHolder.status = LockResultHolder.ROLLBACK;
-          }
-        }
-        // 如果是 rollback
-        if (resultHolder.isRollback()) {
-          // 检查 回退
-          resultHolder.rollback();
-        }
-        return resultHolder;
-      }else {
-        // 如果有失败的则执行
-        resultHolder.status = LockResultHolder.TIMEOUT;
-        return resultHolder;
       }
-    }catch (Throwable ex) {
+      return resultHolder;
+    } catch (IOException ex) {
       throw new IllegalArgumentException(ex);
     }
   }
 
   @Override
   public <T> LockResultHolder<T> tryLock(String key, SetLockArgs args) {
-    args = args == null ? SetLockArgs.builder().build() : args;
-    LockResultHolder resultBuilder = LockResultHolder
+    args = args == null ? SetLockArgs.buildDefaultArgs() : args;
+    LockResultHolder resultHolder = LockResultHolder
         .builder().args(args).sharedLock(this).value(UUID.randomUUID().toString()).key(key).build();
-    try{
-      if (tryAcquire(resultBuilder)){
-        resultBuilder.status = LockResultHolder.LOCKING;
-        return resultBuilder;
-      }else {
-        resultBuilder.status = LockResultHolder.TIMEOUT;
-      }
-    }catch (Throwable ex) {
-      throw new IllegalArgumentException(ex);
+    // 添加到本地线程中
+    SharedLockContextHolder.add(resultHolder);
+    // 开始尝试获取锁
+    if (tryAcquire(resultHolder)){
+      resultHolder.status(LockResultHolder.LOCKING);
+      return resultHolder;
+    }else {
+      resultHolder.status(LockResultHolder.TIMEOUT);
     }
-    return resultBuilder;
+    return resultHolder;
   }
 
   /**
    * 实现 锁
    * @param resultHolder
-   * @return
    */
   @Override
-  public boolean unlock(LockResultHolder resultHolder) {
+  public boolean unlock(LockResultHolder resultHolder) throws LockReleaseException{
+    // 释放本地线程的数据
+    if (resultHolder != null){
+      SharedLockContextHolder.remove(resultHolder.getKey());
+    }
     // 检查是否锁定,如果不锁定，则直接释放失败
     if (resultHolder == null || !resultHolder.mybeRelease() || resultHolder.args == null){
       return false;
     }
-    try{
-      // 释放锁
-      if (!release(resultHolder)){
-        resultHolder.status = LockResultHolder.ROLLBACK;
+    // 释放锁
+    if (!release(resultHolder)){
+      // 如果没有超时，则设置 rollback
+      if (!resultHolder.isTimeout()){
+        resultHolder.status(LockResultHolder.ROLLBACK);
         resultHolder.rollback();
-        return false;
-      }else {
-        resultHolder.status = LockResultHolder.DONE;
-        return true;
       }
-    }catch (Throwable ex) {
-      throw new IllegalArgumentException(ex);
+      throw new LockReleaseException();
+    }else {
+      resultHolder.status(LockResultHolder.DONE);
+      return true;
     }
   }
 
   /**
-   * 通过自旋锁形式获取锁
+   * 获取锁实现
    * @param resultHolder 结果持有者，里面包含所有参数
    * @return 获取结果
    */
-  protected abstract  boolean tryAcquire(LockResultHolder resultHolder) throws Exception;
+  protected abstract boolean tryAcquire(LockResultHolder resultHolder);
 
 
   /**
-   * 释放锁
+   * 释放锁实现
    * @param resultHolder result holder
    * @return 释放结果
    */
-  protected abstract boolean release(LockResultHolder resultHolder) throws Exception;
+  protected abstract boolean release(LockResultHolder resultHolder);
 
 }

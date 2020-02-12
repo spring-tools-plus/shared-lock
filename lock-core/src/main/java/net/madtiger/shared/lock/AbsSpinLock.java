@@ -28,13 +28,12 @@ public abstract class AbsSpinLock extends AbsSharedLock {
         // 自旋 times 次
         for (; ; ) {
           // 如果最大尝试次数大于1，则
-          if (args.maxRetryTimes > 1 && timesCount > args.maxRetryTimes){
-            System.out.println("总获取次数超时");
+          if (args.maxRetryTimes > 0 && timesCount >= args.maxRetryTimes){
             return false;
           }
           checkTimeout(resultHolder.key, timeout);
           // 如果获取成功则返回成功
-          if (setNX(resultHolder)){
+          if (doAcquire(resultHolder)){
             return true;
           }
           if (--times <= 0){
@@ -71,5 +70,5 @@ public abstract class AbsSpinLock extends AbsSharedLock {
    * @param resultHolder
    * @return
    */
-  protected abstract boolean setNX(LockResultHolder resultHolder);
+  protected abstract boolean doAcquire(LockResultHolder resultHolder);
 }

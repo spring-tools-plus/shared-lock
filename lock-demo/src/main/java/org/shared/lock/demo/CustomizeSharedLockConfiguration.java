@@ -1,9 +1,11 @@
 package org.shared.lock.demo;
 
+import net.madtiger.shared.lock.CuratorLockClient;
 import net.madtiger.shared.lock.ISharedLock;
-import org.springframework.beans.factory.ObjectProvider;
+import net.madtiger.shared.lock.ZookeeperLockService;
+import org.apache.curator.framework.CuratorFramework;
+import org.apache.zookeeper.ZooKeeper;
 import org.springframework.context.annotation.Bean;
-import org.springframework.data.redis.core.RedisTemplate;
 
 /**
  * 手动 配置 分布式锁
@@ -17,10 +19,20 @@ public class CustomizeSharedLockConfiguration {
    * @param redisTemplate
    * @return
    */
+//  @Bean
+//  public ISharedLock redisSharedLock(RedisTemplate redisTemplate){
+//    return new RedisLockService(new RedisLockClient(redisTemplate));
+//  }
+
+  /**
+   * 配置 共享锁
+   * @param curatorFramework
+   * @return
+   */
   @Bean
-  public ISharedLock defaultSharedLock(ObjectProvider<RedisTemplate> redisTemplate){
-   // return new RedisLockService(new RedisLockClient(redisTemplate.getIfAvailable()));
-    return null;
+  public ISharedLock zkSharedLock(CuratorFramework curatorFramework){
+    return new ZookeeperLockService(new CuratorLockClient(curatorFramework));
   }
+
 
 }

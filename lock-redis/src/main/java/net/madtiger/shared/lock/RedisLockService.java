@@ -3,7 +3,6 @@ package net.madtiger.shared.lock;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.Assert;
 
 /**
  * redis 共享锁服务
@@ -43,7 +42,7 @@ public class RedisLockService extends AbsSpinLock {
   }
 
   @Override
-  protected boolean setNX(LockResultHolder resultHolder) {
+  protected boolean doAcquire(LockResultHolder resultHolder) {
     Objects.requireNonNull(resultHolder.args);
     return lockRedisClient.setNX(resultHolder);
   }
@@ -51,7 +50,6 @@ public class RedisLockService extends AbsSpinLock {
   @Override
   protected boolean release(LockResultHolder resultHolder) {
     Objects.requireNonNull(resultHolder.args);
-    Assert.isTrue(resultHolder.args.getGetTimeoutMills() >= SetLockArgs.NET_TIMEOUT, String.format("Redis 超时时间不能小于 %s 毫秒", SetLockArgs.NET_TIMEOUT));
     // 如果释放失败
     if (!lockRedisClient.releaseByLua(RELEASE_LUA, resultHolder)){
       log.info("释放锁{}失败{}，开始降级释放...", resultHolder.getKey(), lockRedisClient.get(resultHolder));

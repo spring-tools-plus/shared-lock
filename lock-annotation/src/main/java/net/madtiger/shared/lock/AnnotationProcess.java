@@ -64,7 +64,7 @@ public final class AnnotationProcess {
     MethodSignature signature = (MethodSignature) jp.getSignature();
     // 解析参数
     String[] parameterNames = signature.getParameterNames();
-    Map<String,Object> params = new HashMap<>();
+    Map<String,Object> params = new HashMap<>(8);
     Object[] args = jp.getArgs();
     if (parameterNames != null && parameterNames.length > 0){
       for (int i = 0;i < parameterNames.length;i ++) {
@@ -225,10 +225,6 @@ public final class AnnotationProcess {
   private SetLockArgs buildArgs(SharedLock lock, Object target, Method method, Object[] args){
     SetLockArgs.SetLockArgsBuilder builder = SetLockArgs.builder();
 
-    // 网络超时时间
-    if (lock.getTimeoutMills() != DEFAULT_INT) {
-      builder.getTimeoutMills(lock.getTimeoutMills());
-    }
 
     // 锁定时间
     if (lock.lockedSeconds() != DEFAULT_INT) {

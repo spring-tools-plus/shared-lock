@@ -6,6 +6,7 @@ import net.madtiger.shared.lock.RedisLockService;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.redis.core.RedisTemplate;
 
 /**
@@ -14,15 +15,15 @@ import org.springframework.data.redis.core.RedisTemplate;
  * @version 1.0
  */
 @Configuration
-public class SharedLockRedisConfiguration extends AbsSharedLockConfiguration {
+public class SharedLockRedisConfiguration extends AbsSharedLockConfiguration<RedisTemplate> {
 
   /**
    * 配置 共享锁
    * @param redisTemplate
    * @return
    */
-  @Bean
-  public ISharedLock defaultSharedLock(RedisTemplate redisTemplate){
+  @Override
+  protected ISharedLock newSharedLock(RedisTemplate redisTemplate){
     return new RedisLockService(new RedisLockClient(redisTemplate));
   }
 }

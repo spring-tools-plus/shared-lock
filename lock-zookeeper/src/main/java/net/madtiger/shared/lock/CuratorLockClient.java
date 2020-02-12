@@ -9,7 +9,7 @@ import org.apache.curator.framework.recipes.locks.InterProcessMutex;
  * @author Fenghu.Shi
  * @version 1.0
  */
-public class CuratorLockClient implements IZookeeperLockClient{
+public class CuratorLockClient{
 
   /**
    * 客户端
@@ -40,7 +40,11 @@ public class CuratorLockClient implements IZookeeperLockClient{
     this.lockClient = lockClient;
   }
 
-  @Override
+  /**
+   * 尝试获取锁并
+   * @param resultHolder  结果持有者
+   * @return 获取结果
+   */
   public boolean tryAcquire(LockResultHolder resultHolder) throws Exception {
     InterProcessMutex lock = new InterProcessMutex(lockClient, nodePath(resultHolder.key));
     // 将 lock holder 放到结果集中
@@ -48,7 +52,12 @@ public class CuratorLockClient implements IZookeeperLockClient{
     return lock.acquire(resultHolder.args.waitTimeoutMills, TimeUnit.MILLISECONDS);
   }
 
-  @Override
+  /**
+   * 释放资源
+   * @param resultHolder
+   * @return
+   * @throws Exception
+   */
   public boolean release(LockResultHolder resultHolder) throws Exception {
     if (resultHolder.param1 == null || !(resultHolder.param1 instanceof  InterProcessMutex)) {
       throw new IllegalArgumentException("当前的 holder 数据异常，请传入 tryLock 返回的 LockResultHolder ");

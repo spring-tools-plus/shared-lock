@@ -1,6 +1,5 @@
 package net.madtiger.shared.lock;
 
-import java.util.function.Supplier;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Getter;
@@ -13,11 +12,6 @@ import lombok.Getter;
 @Getter
 @Builder
 public class SetLockArgs {
-
-  /**
-   * 默认网络超时时间，毫秒
-   */
-  public static final int NET_TIMEOUT = 500;
 
   /**
    * 默认锁超时等待时间
@@ -35,7 +29,7 @@ public class SetLockArgs {
   public static final int SLEEP_MIN_MILLS = 50;
 
   /**
-   * 锁超等待超时时间，总的获取时间，该时间应该大于等于 {@link #getTimeoutMills} ，单位秒，默认2秒
+   * 锁超等待超时时间，总的获取时间
    */
   @Default
   int waitTimeoutMills = WAIT_TIMEOUT_SECENDS * 1000;
@@ -71,17 +65,20 @@ public class SetLockArgs {
   int sleepMaxMills = DEFAULT_INT;
 
   /**
-   * 从 锁发放服务器 获取锁的等待超时时间，单位毫秒，默认1000毫秒，比如大于 500
-   */
-  @Default
-  int getTimeoutMills = NET_TIMEOUT;
-
-  /**
-   * 获取key锁定时间
-   * @return
+   * 获取key锁定时间，单位秒
+   * @return lock 时间
    */
   public int getLockedSeconds() {
-    return lockedSeconds <= 0 ? 3 * waitTimeoutMills / 1000 : lockedSeconds;
+    return lockedSeconds <= 0 ? 4 * waitTimeoutMills / 1000 : lockedSeconds;
+  }
+
+
+  /**
+   * 创建一个 默认的参数
+   * @return
+   */
+  public static SetLockArgs buildDefaultArgs(){
+    return SetLockArgs.builder().build();
   }
 
 }

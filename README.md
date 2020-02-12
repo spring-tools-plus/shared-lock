@@ -2,18 +2,29 @@
 
 ## 介绍
 
-分布式共享锁，* 暂时支持 redis *，支持多种模式
+分布式共享锁，支持多种模式
 
 1. try/finally 原始模式
 2. callback 回调模式，类似 JdbcTemplate execute
 3. AOP 切面注解模式
 
+**支持**
+
+1. 重入
+2. 降级
+
+
 支持 enable 引用 和 starter 的开箱即用方式。
 
 ## 软件架构
 
-需要 java 8+ ，同时依赖 spring + spring-data-redis 
+需要 java 8+ ，同时依赖 spring
 
+1. redis 
+依赖 spring data reids
+
+2. zookeeper
+依赖 Curator Framework
 
 ## 安装教程
 
@@ -58,7 +69,7 @@ public class DisLockApplication {
 }
 ```
 
-3. 配置 spring data redis
+3. 配置 spring data redis / curator framework
  
 这里小伙伴们自己配置吧
 
@@ -125,27 +136,35 @@ SharedLock 组件使用主要涉及三个类
 用于 操作 redis 的客户端 ，底层是通过 spring-data-redis 的 RedisTemplate 实现的
 
 2. RedisLockService / ZookeeperLockService
-分布式锁的Redis具体实现类
+分布式锁的Redis/ZK具体实现类
 
 
 3. SharedLockInterceptor 
 用于支持 AOP 模式的拦截器，这里是可选的，如果不需要支持 拦截器则不用实例化
 
 
-*样例*:
+**样例**:
 ```java
 public class CustomizeSharedLockConfiguration {
 
   /**
-   * 配置 共享锁
+   * 配置 redis 共享锁
    * @param redisTemplate
    * @return
    */
   @Bean
-  public ISharedLock<SpinSetLockArgs> defaultSharedLock(ObjectProvider<RedisTemplate> redisTemplate){
-    return new RedisLockService(new SpringRedisLockClient(redisTemplate.getIfAvailable()));
+  public ISharedLock<SetLockArgs> defaultSharedLock(RedisTemplate redisTemplate){
+    return new RedisLockService(new RedisLockClient(redisTemplate));
   }
-  
+  /**
+  * zk 共享锁
+  */
+  @Bean
+  public ISharedLock<SetLockArgs> defaultSharedLock(CuratorFramework zookeeper){
+    // 这里的namespace 可选，如果不传，则使用默认
+    return new ZookeeperLockService(new CuratorLockClient(namespace, zookeeper));
+  }
+
  /**
    * 创建 共享锁 拦截器
    * @param context
@@ -187,7 +206,7 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 
 此方式是以往分布式锁使用较多的方式，需要用户手动获取并释放。
 
-* SharedLock 在原始的使用方式基础上增加了一些比较常用/方便的特性 *
+**SharedLock 在原始的使用方式基础上增加了一些比较常用/方便的特性**
 1. 实现了 ` java.io.Closeable ` 接口，支持 JDK 8 try-with-resource 特性
 2. 返回数据支持链式调用
 3. 支持意外回滚
@@ -196,7 +215,7 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 
 见 [try/finally 基本使用方式](https://github.com/spring-tools-plus/shared-lock/blob/master/lock-demo/src/main/java/org/shared/lock/demo/DemoController.java) 的 `doTry()`方法
 
-* 备注 *
+**备注**
 1. try-with-resource 和 普通try/finally 使用场景区分
 对于所有逻辑都在 try {} 内部执行时，建议使用 try-with-resource 模式，如果需要在 try {} 外部还有根据获取锁状态进行其他业务逻辑时，使用 普通的 try/finally 模式
 
@@ -213,9 +232,6 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
        }, () -> {
          // 这里可以执行回退或者异常检查
          return Flux.error(new Throwable("失败了"));
-       }, () -> {
-         // 这里如果返回 null，则不会覆盖 上面的 数据
-         return Flux.just("执行回滚");
        });
     }
 
@@ -236,7 +252,7 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 
 使用方式见 [AOP 使用方式](https://github.com/spring-tools-plus/shared-lock/blob/master/lock-demo/src/main/java/org/shared/lock/demo/DemoController.java) 的 `doAOP` 方法。
 
-* 此方式增加了几个特性 *
+**此方式增加了几个特性**
 1. 支持降级
 
 `SharedLock#fallbackMethod` 的 配置当获取锁失败后的降级方法。
@@ -255,10 +271,14 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 
 ##  版本更新
 
-* 1.0.6-RELEASE 发布 （2020-02-11）
+* 1.1.0 发布 (2020-02-12)
+
+支持了可重入锁
+
+* 1.0.6 发布 （2020-02-11）
 
 支持 zookeeper 的 Zookeeper 客户端（CuratorFramework 待完成..）
 
-* 1.0.0-RELEASE 发布 （2020-02-08）
+* 1.0.0 发布 （2020-02-08）
 
 完成了基本框架和 redis 实现。
