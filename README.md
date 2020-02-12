@@ -207,7 +207,7 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 此方式是以往分布式锁使用较多的方式，需要用户手动获取并释放。
 
 **SharedLock 在原始的使用方式基础上增加了一些比较常用/方便的特性**
-1. 实现了 ` java.io.Closeable ` 接口，支持 JDK 8 try-with-resource 特性
+1. 实现了 ` java.lang.AutoCloseable ` 接口，支持 JDK 8 try-with-resource 特性
 2. 返回数据支持链式调用
 3. 支持意外回滚
 
