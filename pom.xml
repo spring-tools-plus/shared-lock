@@ -68,7 +68,6 @@
     <module>lock-core</module>
     <module>lock-redis</module>
     <module>lock-annotation</module>
-    <module>lock-demo</module>
     <module>spring-boot-starter-shared-lock</module>
     <module>lock-zookeeper</module>
   </modules>

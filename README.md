@@ -213,7 +213,7 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 
 #### 基础使用方式
 
-见 [try/finally 基本使用方式](https://github.com/spring-tools-plus/shared-lock/blob/master/lock-demo/src/main/java/org/shared/lock/demo/DemoController.java) 的 `doTry()`方法
+见 [try/finally 基本使用方式](../shared-lock-demo/blob/master/src/main/java/org/shared/lock/demo/DemoController.java) 的 `doTry()`方法
 
 **备注**
 1. try-with-resource 和 普通try/finally 使用场景区分
@@ -242,7 +242,7 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 
 该方式锁的获取和执行都由系统管理，只有当获取所成功后才执行此方法。
 
-使用方式见 [execute 使用方式](https://github.com/spring-tools-plus/shared-lock/blob/master/lock-demo/src/main/java/org/shared/lock/demo/DemoController.java) 的 `doExecute` 方法。
+使用方式见 [execute 使用方式](../shared-lock-demo/blob/master/src/main/java/org/shared/lock/demo/DemoController.java) 的 `doExecute` 方法。
 
 
 ### AOP Annotation 方式
@@ -250,7 +250,7 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 此方式最简便，只要在需要锁执行的方法上增加 `SharedLock` 注解。
 
 
-使用方式见 [AOP 使用方式](https://github.com/spring-tools-plus/shared-lock/blob/master/lock-demo/src/main/java/org/shared/lock/demo/DemoController.java) 的 `doAOP` 方法。
+使用方式见 [AOP 使用方式](.../shared-lock-demo/blob/master/src/main/java/org/shared/lock/demo/DemoService.java) 的 `doAOP` 方法。
 
 **此方式增加了几个特性**
 1. 支持降级
