@@ -26,6 +26,17 @@
 2. zookeeper
 依赖 Curator Framework
 
+### 名词说明
+
+英文名称|中文名称|描述
+:---:|:--:|:---:
+ISharedLock|锁持有对象|锁的持有者和操作者
+Provider|服务提供者|最终底层实现的底层服务，比如 ZooKeeper，Redis，都会有对应的Provider
+Builder|构造模式|用于快速链式构造对象，如 SharedLockBuilder
+Environment|环境|用于定义SharedLock环境信息，如 SharedLockEnvironment
+Decorator|装饰者|SharedLock 内部除了基本功能意外的特性都是通过 Decorator 实现的，如 自旋锁（redis 支持），可重入锁
+
+
 ## 安装教程
 
 安装方式，主要支持两三种自动注入方式：enabled 、spring boot starter 和 自定义 
@@ -148,21 +159,25 @@ SharedLock 组件使用主要涉及三个类
 public class CustomizeSharedLockConfiguration {
 
   /**
-   * 配置 redis 共享锁
+   * 配置 redis 共享锁服务提供者
    * @param redisTemplate
    * @return
    */
-  @Bean
-  public ISharedLock<SetLockArgs> defaultSharedLock(RedisTemplate redisTemplate){
-    return new RedisLockService(new RedisLockClient(redisTemplate));
+  @PostConstruct
+  public void defaultSharedLock(RedisTemplate redisTemplate){
+    ISharedLockProvider provider = new RedisLockProvider(new RedisLockClient(redisTemplate));
+    // 这里 addDecorator classes 可以添加一些支持的特性具体见特性介绍
+    SharedLockEnvironment.getInstance().addDecoratorClasses(defaultDecorators()).setDefaultProvder(provider);
   }
   /**
   * zk 共享锁
   */
-  @Bean
-  public ISharedLock<SetLockArgs> defaultSharedLock(CuratorFramework zookeeper){
-    // 这里的namespace 可选，如果不传，则使用默认
-    return new ZookeeperLockService(new CuratorLockClient(namespace, zookeeper));
+  @PostConstruct
+  public void defaultSharedLock(CuratorFramework zookeeper){
+    ISharedLockProvider provider = new ZookeeperLockProvider(new CuratorLockClient(zookeeper));
+    // 这里 addDecorator classes 可以添加一些支持的特性具体见特性介绍
+    // 同时可以设置全局的 lockSeconds 、 provider（如果有多个）和  zk 的锁父节点
+    SharedLockEnvironment.getInstance().setConfigurer(ZookeeperLockProvider.class, ZookeeperConfigurer.builder().namespace("/lock-namespace").build()).addDecoratorClasses(defaultDecorators()).setDefaultProvder(provider);
   }
 
  /**
@@ -188,19 +203,82 @@ public class CustomizeSharedLockConfiguration {
 2. execute callback 回调方式，类似 JdbcTemplate execute
 3. AOP + Annotation 模式，类似 spring 事务
 
+
+### 全局参数配置
+**对于一些全局性配置，如 锁定时间，zk 的namespace等，可以使用全局配置实例配置**
+```java
+  
+  // 全局配置只需要执行一次即可，开发者可以交由 Spring 管理，比如 单例的 PostConstruct 方法等
+  // 这里配置了 lockSeconds（锁定时长，如果不设置，则默认20秒）, zk 的node 父节点，默认的服务提供者 (默认提供者必须提供)
+  SharedLockEnvironment.getInstance().lockSeconds(20).setConfigurer(ZookeeperLockProvider.class, ZookeeperConfigurer.builder().namespace("/lock-namespace").build()).addDecoratorClasses(defaultDecorators()).setDefaultProvder(provider);
+  
+```
+
+
 ----
 
-SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder ` 类中)
-1. INIT 初始化: 还没有尝试获取锁
-2. LOCKING 锁定中: 已经成功获取锁，且没有释放，一般是 try/finally 模式获取所成功后的状态
-3. DONE 完成: 处理完成，获取锁成功，并且释放锁成功，这里不保证 业务执行成功
-4. TIMEOUT 超时: 获取锁超时
-5. ROLLBACK 回滚: 获取所成功，释放失败时的状态，一般是由于业务执行时间过长导致。
+SharedLock 组件内部的锁定义了多种状态(定义在`net.madtiger.lock.SharedLockStatus` 类中)
+
+``` java
+/**
+ * 共享锁状态
+ *
+ * @author Fenghu.Shi
+ * @version 1.2.0
+ */
+public enum SharedLockStatus {
+
+  /**
+   * 新建
+   */
+  NEW,
+
+  /**
+   * 已锁定
+   */
+  LOCKED,
+
+  /**
+   * 获取所超时
+   */
+  TIMEOUT,
+
+  /**
+   * 取消
+   */
+  CANCEL,
+
+  /**
+   * 获取锁成功后，解锁失败，此阶段正常应该回滚
+   */
+  UNLOCK_FAIL,
+
+  /**
+   * 超时后，已解锁
+   */
+  TIMEOUT_UNLOCK,
+
+  /**
+   * 取消后，已解锁
+   */
+  CANCEL_UNLOCK,
+
+  /**
+   * 释放锁成功
+   */
+  DONE;
+
+}
+```
 
 
 ---- 
 
-在执行分布式锁时，可以传递一个 `SetLockArgs` 参数，用于配置 一些常用参数，比如 锁定时间等
+创建锁对象使用 Builder模式
+```java
+//支持链式操作
+ISharedLock lock = SharedLockBuilder.builder(LOCK_KEY).build();
+```
 
 ### try/finally 使用方式
 
@@ -219,20 +297,42 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 1. try-with-resource 和 普通try/finally 使用场景区分
 对于所有逻辑都在 try {} 内部执行时，建议使用 try-with-resource 模式，如果需要在 try {} 外部还有根据获取锁状态进行其他业务逻辑时，使用 普通的 try/finally 模式
 
-2. rollback callback 使用
+2. fault callback 使用
 如果需要对锁释放失败，进行回退处理业务时，可以通过如下方式使用。
 ```java
 
-// 来一个 try-with-resource 模式
-    try(LockResultHolder<Flux<String>> holder = lockService.tryLock("123123123", SetLockArgs.builder().maxRetryTimes(5).build())) {
-      // 支持降级的处理
-       return holder.doFallback(() -> {
-         System.out.println("执行成功");
-         return Flux.just("OK");
-       }, () -> {
-         // 这里可以执行回退或者异常检查
-         return Flux.error(new Throwable("失败了"));
-       });
+    // 来一个 try-with-resource 模式
+    try(ISharedLock lock = SharedLockBuilder.builder(LOCK_KEY).build()) {
+      if (lock.tryLock(5, TimeUnit.SECONDS)) {
+        System.out.println("执行成功");
+        return Flux.just("OK");
+      } else {
+        return Flux.error(new Throwable("失败了"));
+      }
+    }
+
+```
+3. rollback 模式
+当已经获取了锁，由于执行时间过长或者网络等其他原因导致锁没有释放成功，对于安全性较高的系统，在释放锁失败后，需要回退时，可以通过此机制回退。
+```java
+    
+    // 来一个基本模式
+    ISharedLock lock = SharedLockBuilder.builder(LOCK_KEY).build();
+    Flux<String> result;
+    try{
+      // 尝试获取所并判断是否锁定成功
+      if (lock.tryLock(10, TimeUnit.SECONDS)){
+        result = Flux.just("获取锁成功");
+      }else {
+        result = Flux.just("获取锁失败");
+      }
+    } finally {
+      // 3. 释放锁
+      lock.unlock();
+      // 这里失败了，咱们 rollback 一下
+      if (lock.isRollback()) {
+        result = Flux.just("回滚吧");
+      }
     }
 
 ```
@@ -243,6 +343,7 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 该方式锁的获取和执行都由系统管理，只有当获取所成功后才执行此方法。
 
 使用方式见 [execute 使用方式](../../../shared-lock-demo/blob/master/src/main/java/org/shared/lock/demo/DemoController.java) 的 `doExecute` 方法。
+
 
 
 ### AOP Annotation 方式
@@ -268,8 +369,53 @@ SharedLock 组件内部的锁定义了 4 种状态(定义在` LockResultHolder `
 见 `ISharedLock`
 
 
+##  特性支持（Decorator/装饰者模式）
 
-##  版本更新
+系统内部除了基本锁功能，还实现了一些其他特性，如：可重入锁，自旋锁等，此类特性都使用 Decorator 实现。
+
+支持如下：
+
+特性名称|实现类|描述
+:--:|:--:|:--:
+自旋锁|net.madtiger.lock.decorator.SpinLockDecorator|当使用指定时间段内获取锁时(调用了含有 time和 TimeUnit 参数的方法),如果第一次失败，则会立即获取**3**次，如果失败，则随机休眠200+(300随机)毫秒后继续执行自旋。此服务 建议 Redis Provider 使用。
+可重入锁|net.madtiger.lock.decorator.ReentrantLockDecorator|同一个线程内可以多次获取同一把锁，默认均支持，可以使用 `SharedLockEnvironment.getInstance().clearDecoratorClasses()`清空
+JVM锁|net.madtiger.lock.decorator.LocalLockDecorator|**未完成，实验中，先误使用**，当有一定概率获取到的锁都是在同一个JVM中（如：节点比较少，5个以内）时，先在jvm中添加一个内存锁，当此锁获取成功后，再正常获取远程锁，解锁同理。
+
+## 客户端（Provider）配置
+客户端可以有自己的配置，我们通过 `net.madtiger.lock.provider.IProviderConfigurer`来实现并配置，
+如：ZK 的 namespace 配置。
+
+#### 1. 全局配置方式:
+```java
+    SharedLockEnvironment.getInstance().lockSeconds(20).setConfigurer(ZookeeperLockProvider.class, ZookeeperConfigurer.builder().namespace("/lock-namespace").build());
+
+```
+#### 2. 局部方式
+
+```java
+    ISharedLock lock = SharedLockBuilder.builder(LOCK_KEY).providerConfigurer(ZookeeperConfigurer.builder().namespace("/lock-namespace")).build();
+
+```
+
+
+暂时支持的配置如下：
+
+### ZooKeeperProvider
+具体实现类`net.madtiger.lock.zk.ZookeeperConfigurer`，支持的属性。
+
+属性|描述
+:--:|:--:
+namespace|zk 的共享锁 key 父节点，必须以 / 开头
+
+
+
+
+
+##  版本更新 
+
+* 1.2.0 发布 (2020-02-14)
+
+重构了整体结构，添加了 全局配置和builder等模式
 
 * 1.1.0 发布 (2020-02-12)
 
