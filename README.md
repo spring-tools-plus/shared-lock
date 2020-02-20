@@ -17,11 +17,10 @@
 支持 enable 引用 和 starter 的开箱即用方式。
 
 
-## 快速开始
+## 一、快速开始
 
-### REDIS 客户端
+### 1、MAVEN 引用
 
-#### 1. maven 引用
 ```xml
 <dependency>
    <groupId>net.madtiger.shared.lock</groupId>
@@ -34,8 +33,15 @@
    <artifactId>lock-redis</artifactId>
    <version>${lastVersion}</version>
 </dependency>
+
+<!-- zookeeper -->
+<dependency>
+   <groupId>net.madtiger.shared.lock</groupId>
+   <artifactId>lock-zookeeper</artifactId>
+   <version>${lastVersion}</version>
+</dependency>
 ```
-#### 2. try/finally 使用
+### 2. try/finally 使用
 
 ```java
 
@@ -52,7 +58,7 @@
 
 ```
 
-#### 3. AOP 方式使用
+### 3. AOP 方式使用
 
 ```java
 
@@ -108,7 +114,7 @@ public class DemoService {
 
 
 
-## 软件架构
+## 二、软件架构
 
 需要 java 8+ ，同时依赖 spring
 
@@ -129,7 +135,7 @@ Environment|环境|用于定义SharedLock环境信息，如 SharedLockEnvironmen
 Decorator|装饰者|SharedLock 内部除了基本功能意外的特性都是通过 Decorator 实现的，如 自旋锁（redis 支持），可重入锁
 
 
-## 安装教程
+## 三、安装教程
 
 安装方式，主要支持两三种自动注入方式：enabled 、spring boot starter 和 自定义 
 
