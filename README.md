@@ -16,6 +16,98 @@
 
 支持 enable 引用 和 starter 的开箱即用方式。
 
+
+## 快速开始
+
+### REDIS 客户端
+
+#### 1. maven 引用
+```xml
+<dependency>
+   <groupId>net.madtiger.shared.lock</groupId>
+   <artifactId>spring-boot-starter-shared-lock</artifactId>
+   <version>${lastVersion}</version>
+</dependency>
+<!-- redis -->
+<dependency>
+   <groupId>net.madtiger.shared.lock</groupId>
+   <artifactId>lock-redis</artifactId>
+   <version>${lastVersion}</version>
+</dependency>
+```
+#### 2. try/finally 使用
+
+```java
+
+    // 来一个 try-with-resource 模式
+    try(ISharedLock lock = SharedLockBuilder.builder(LOCK_KEY).build()) {
+      if (lock.tryLock(5, TimeUnit.SECONDS)) {
+        System.out.println("执行成功");
+        return Flux.just("OK");
+      } else {
+        return Flux.error(new Throwable("失败了"));
+      }
+    }
+
+
+```
+
+#### 3. AOP 方式使用
+
+```java
+
+package org.shared.lock.demo;
+
+import lombok.extern.slf4j.Slf4j;
+import net.madtiger.lock.SharedLock;
+import org.springframework.stereotype.Service;
+
+/**
+ * 样例
+ * @author Fenghu.Shi
+ * @version 1.0
+ */
+@Service
+@Slf4j
+public class DemoService {
+
+
+  /**
+   * 执行入口
+   * @param abc
+   * @return
+   */
+  @SharedLock(key ="demo-test-#{abc}", fallbackMethod = "faultBack", rollbackMethod = "rollback")
+  public String testAopLock(String abc){
+      log.error("我获取到锁了");
+      return "这是我得知";
+  }
+
+  /**
+   * 失败降级方法
+   * @param bac
+   * @return
+   */
+  public String faultBack(String bac){
+    log.error("我被降级了");
+    return "降级哈哈";
+  }
+
+  /**
+   * 回滚方法
+   * @param abc
+   */
+  public String rollback(String abc){
+    System.out.println("回滚了");
+    return "我被回滚了";
+  }
+}
+
+
+```
+
+
+
 ## 软件架构
 
 需要 java 8+ ，同时依赖 spring
